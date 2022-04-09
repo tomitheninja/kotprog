@@ -35,7 +35,7 @@ public class GameStateManager {
 
     public void render(Graphics graphics) {
         try {
-            this.states.peek().render(graphics);
+            this.states.peek().prerender(graphics);
         } catch(EmptyStackException e) {
             System.err.println("[GameStateManager]: Error! GameState stack is empty!");
             System.exit(-1);

@@ -2,7 +2,7 @@ package framework.gamestates;
 
 import framework.gui.WindowManager;
 
-import java.awt.Graphics;
+import java.awt.*;
 
 public abstract class GameState {
 
@@ -16,6 +16,8 @@ public abstract class GameState {
 
     protected void prerender(Graphics graphics) {
         graphics.clearRect(0, 0, WindowManager.WIDTH, WindowManager.HEIGHT);
+        graphics.setColor(new Color(0, 0, 0));
+        graphics.fillRect(0, 0, WindowManager.WIDTH, WindowManager.HEIGHT);
         render(graphics);
     }
     protected abstract void render(Graphics graphics);

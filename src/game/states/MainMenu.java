@@ -8,8 +8,6 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 
 public class MainMenu extends GameState {
-
-    private static final Color BG_COLOR = new Color(0, 0, 0);
     private static final Color TEXT_COLOR = new Color(255, 255, 255);
     private static final Color PRIMARY_COLOR = new Color(0, 255, 0);
     private static final Color ACTIVE_COLOR = new Color(0, 0, 255);
@@ -32,8 +30,6 @@ public class MainMenu extends GameState {
         final int H = WindowManager.HEIGHT;
         final int HALF_W = W / 2;
         final int HALF_H = H / 2;
-        graphics.setColor(BG_COLOR);
-        graphics.fillRect(0, 0, W, H);
 
 
         final String TITLE = "Heroes";
@@ -88,7 +84,7 @@ public class MainMenu extends GameState {
                 if (this.selected > 0) this.selected--;
                 break;
             case KeyEvent.VK_ENTER:
-                super.gameStateManager.stackState(new PlayingState(super.gameStateManager, 700 + (this.selected) * 300));
+                super.gameStateManager.stackState(new ShopState(super.gameStateManager, 700 + (this.selected) * 300));
                 break;
         }
     }

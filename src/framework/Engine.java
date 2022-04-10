@@ -1,17 +1,15 @@
 package framework;
 
-import java.awt.Graphics;
+import framework.gamestates.GameStateManager;
+import framework.gui.WindowManager;
+import game.states.MainMenu;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-
-import javax.swing.JPanel;
-import javax.swing.Timer;
-
-import framework.gamestates.GameStateManager;
-import framework.gui.WindowManager;
-import game.states.MainMenu;
 
 public class Engine {
 
@@ -23,7 +21,7 @@ public class Engine {
     public static void init() {
         gameStateManager = new GameStateManager();
         windowManager = new WindowManager();
-        timer = new Timer(20, new MainGameLoop());
+        timer = new Timer(1000 / 30, new MainGameLoop());
     }
 
     public static void start() {
@@ -66,7 +64,8 @@ public class Engine {
         }
 
         @Override
-        public void keyTyped(KeyEvent arg0) {}
+        public void keyTyped(KeyEvent arg0) {
+        }
 
     }
 }

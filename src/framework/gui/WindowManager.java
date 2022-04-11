@@ -8,7 +8,7 @@ import javax.swing.JPanel;
 
 public class WindowManager {
 
-    private JFrame frame;
+    private final JFrame frame;
     private JPanel panel;
 
     public static final int WIDTH = 800;

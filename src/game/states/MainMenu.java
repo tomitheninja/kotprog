@@ -6,6 +6,7 @@ import framework.gui.WindowManager;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.Objects;
 
 public class MainMenu extends GameState {
     private static final Color TEXT_COLOR = new Color(255, 255, 255);
@@ -14,7 +15,7 @@ public class MainMenu extends GameState {
 
     private static final String[] DIFFICULTIES = new String[]{"easy", "normal", "hard"};
 
-    private int selected = 0;
+    private int selected = 1;
 
     public MainMenu(GameStateManager manager) {
         super(manager);
@@ -37,6 +38,9 @@ public class MainMenu extends GameState {
         final String START = "Start";
         final String INSTRUCTIONS = "Use the arrow keys to change the difficulty and press enter to start the game";
 
+        // black background
+        graphics.setColor(Color.BLACK);
+        graphics.fillRect(0, 0, W, H);
 
         // title
         graphics.setColor(TEXT_COLOR);
@@ -69,7 +73,6 @@ public class MainMenu extends GameState {
         graphics.setFont(new Font("Arial", Font.BOLD, 15));
 
         graphics.drawString(INSTRUCTIONS, HALF_W - graphics.getFontMetrics().stringWidth(INSTRUCTIONS) / 2, H - graphics.getFontMetrics().getHeight() / 2);
-
     }
 
     @Override
@@ -84,7 +87,7 @@ public class MainMenu extends GameState {
                 if (this.selected > 0) this.selected--;
                 break;
             case KeyEvent.VK_ENTER:
-                super.gameStateManager.stackState(new ShopState(super.gameStateManager, 700 + (this.selected) * 300));
+                super.gameStateManager.stackState(new ShopState(super.gameStateManager, 700 + (2 - selected) * 300));
                 break;
         }
     }

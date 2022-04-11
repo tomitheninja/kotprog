@@ -6,7 +6,7 @@ import java.util.Stack;
 
 public class GameStateManager {
 
-    private Stack<GameState> states;
+    private final Stack<GameState> states;
 
     public GameStateManager() {
         this.states = new Stack<>();
@@ -25,27 +25,27 @@ public class GameStateManager {
     }
 
     public void loop() {
-        try {
-            this.states.peek().loop();
-        } catch(EmptyStackException e) {
+        if (this.states.isEmpty()) {
             System.err.println("[GameStateManager]: Error! GameState stack is empty!");
             System.exit(-1);
         }
+        this.states.peek().loop();
     }
 
+
     public void render(Graphics graphics) {
-        try {
-            this.states.peek().prerender(graphics);
-        } catch(EmptyStackException e) {
+        if (this.states.isEmpty()) {
             System.err.println("[GameStateManager]: Error! GameState stack is empty!");
             System.exit(-1);
         }
+        this.states.peek().prerender(graphics);
     }
+
 
     public void keyPressed(int keyCode) {
         try {
             this.states.peek().keyPressed(keyCode);
-        } catch(EmptyStackException e) {
+        } catch (EmptyStackException e) {
             System.err.println("[GameStateManager]: Error! GameState stack is empty!");
             System.exit(-1);
         }
@@ -54,7 +54,7 @@ public class GameStateManager {
     public void keyReleased(int keyCode) {
         try {
             this.states.peek().keyReleased(keyCode);
-        } catch(EmptyStackException e) {
+        } catch (EmptyStackException e) {
             System.err.println("[GameStateManager]: Error! GameState stack is empty!");
             System.exit(-1);
         }

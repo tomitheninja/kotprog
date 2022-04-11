@@ -2,17 +2,30 @@ package game.states;
 
 import framework.gamestates.GameState;
 import framework.gamestates.GameStateManager;
+import game.payable.Hero;
+import game.payable.Unit;
+import game.payable.magic.Feltamasztas;
+import game.payable.magic.Tűzlabda;
+import game.payable.magic.VillamCsapas;
 
 import java.awt.*;
+import java.util.ArrayList;
 
 public class PlayingState extends GameState {
 
-    private final int gold;
+    protected Hero hero;
+    ArrayList<Unit> units;
+    Feltamasztas feltamasztas;
+    Tűzlabda tuzlabda;
+    VillamCsapas villamCsapas;
 
-    public PlayingState(GameStateManager gsm, int initialGoldAmount) {
+    public PlayingState(GameStateManager gsm, Hero hero, ArrayList<Unit> units, boolean feltamasztas, boolean tuzlabda, boolean villamCsapas) {
         super(gsm);
-        gold = initialGoldAmount;
-
+        this.hero = hero;
+        this.units = units;
+        if (feltamasztas) this.feltamasztas = new Feltamasztas();
+        if (tuzlabda) this.tuzlabda = new Tűzlabda();
+        if (villamCsapas) this.villamCsapas = new VillamCsapas();
     }
 
     @Override

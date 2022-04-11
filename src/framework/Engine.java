@@ -21,7 +21,7 @@ public class Engine {
     public static void init() {
         gameStateManager = new GameStateManager();
         windowManager = new WindowManager();
-        timer = new Timer(1000 / 30, new MainGameLoop());
+        timer = new Timer(1000 / 20, new MainGameLoop());
     }
 
     public static void start() {

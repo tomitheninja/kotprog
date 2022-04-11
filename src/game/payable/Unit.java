@@ -14,6 +14,10 @@ public class Unit {
     public final SpecialAction specialAction;
     protected int health;
 
+    public Unit(Unit unit) {
+        this(unit.name, unit.minAttack, unit.maxAttack, unit.maxHealth, unit.movement, unit.initiative, unit.specialAction);
+    }
+
     public Unit(String name, int minAttack, int maxAttack, int maxHealth, int movement, int initiative, SpecialAction specialAction) {
         if (name == null || name.isEmpty()) throw new IllegalArgumentException("name cannot be null or empty");
         if (minAttack <= 0) throw new IllegalArgumentException("minAttack must be positive");

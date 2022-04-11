@@ -16,6 +16,22 @@ public class Hero {
         Arrays.stream(Skill.values()).forEach(skill -> this.skillLevels.put(skill, 1));
     }
 
+    public Hero(int attack, int defence, int magic, int knowledge, int morale, int luck) {
+        this();
+        if (0 > attack || attack > 10) throw new IllegalArgumentException("Attack must be between 0 and 10");
+        this.skillLevels.put(Skill.ATTACK, attack);
+        if (0 > defence || defence > 10) throw new IllegalArgumentException("Defence must be between 0 and 10");
+        this.skillLevels.put(Skill.DEFENCE, defence);
+        if (0 > magic || magic > 10) throw new IllegalArgumentException("Magic must be between 0 and 10");
+        this.skillLevels.put(Skill.MAGIC, magic);
+        if (0 > knowledge || knowledge > 10) throw new IllegalArgumentException("Knowledge must be between 0 and 10");
+        this.skillLevels.put(Skill.KNOWLEDGE, knowledge);
+        if (0 > morale || morale > 10) throw new IllegalArgumentException("Morale must be between 0 and 10");
+        this.skillLevels.put(Skill.MORALE, morale);
+        if (0 > luck || luck > 10) throw new IllegalArgumentException("Luck must be between 0 and 10");
+        this.skillLevels.put(Skill.LUCK, luck);
+    }
+
     public void addMagic(Magic magic) {
         this.magic.add(magic);
     }
@@ -28,8 +44,8 @@ public class Hero {
         return getSkill(Skill.ATTACK);
     }
 
-    public int getDefense() {
-        return getSkill(Skill.DEFENSE);
+    public int getDefence() {
+        return getSkill(Skill.DEFENCE);
     }
 
     public int getMagic() {
@@ -49,7 +65,7 @@ public class Hero {
     }
 
     public enum Skill {
-        ATTACK, DEFENSE, MAGIC, KNOWLEDGE, MORALE, LUCK,
+        ATTACK, DEFENCE, MAGIC, KNOWLEDGE, MORALE, LUCK,
     }
 
     public class SkillAction {

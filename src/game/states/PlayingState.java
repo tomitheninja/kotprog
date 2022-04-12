@@ -141,15 +141,15 @@ public class PlayingState extends GameState {
 
         // instructions
         graphics.setColor(Color.WHITE);
-        graphics.setFont(new Font("Arial", Font.PLAIN, 12));
+        graphics.setFont(new Font("Arial", Font.PLAIN, 14));
         graphics.drawString("Use arrows to navigate, space or enter to select and escape or backspace to go back", 10, WindowManager.HEIGHT - 30);
 
         // unit info
         for (UnitWithCoordinate unit : units) {
             if (unit.coordinate.equals(cursor)) {
                 graphics.setColor(Color.WHITE);
-                graphics.setFont(new Font("Arial", Font.BOLD, 12));
-                graphics.drawString("Unit: " + unit.name + " hp: " + unit.getHealth(), 10, WindowManager.HEIGHT - 10);
+                graphics.setFont(new Font("Arial", Font.BOLD, 14));
+                graphics.drawString("Unit: " + (unit.toString()), 10, WindowManager.HEIGHT - 15);
             }
         }
     }

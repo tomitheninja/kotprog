@@ -36,6 +36,13 @@ public class Unit {
         this.specialAction = specialAction;
     }
 
+    @Override
+    public String toString() {
+        double minAttack = (double) health * this.minAttack / maxHealth;
+        double maxAttack = (double) health * this.maxAttack / maxHealth;
+        return name + " with health: " + health + "/" + maxHealth + ". Attack:" + (int) Math.ceil(minAttack) + "-" + (int) Math.ceil(maxAttack) + ". Has initiative of " + initiative;
+    }
+
     public int getHealth() {
         return health;
     }

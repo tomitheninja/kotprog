@@ -8,21 +8,21 @@ import game.payable.Unit;
 import game.payable.magic.Feltamasztas;
 import game.payable.magic.Tűzlabda;
 import game.payable.magic.VillamCsapas;
+import game.util.BoardLocation;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.Random;
 
 public class PlayingState extends GameState {
     protected Hero hero;
     protected Hero otherHero;
     protected int manna = 5;
-    protected ArrayList<UnitWithCoordinate> units = new ArrayList<>();
+    protected ArrayList<UnitOnBoard> units = new ArrayList<>();
     protected Feltamasztas feltamasztas;
     protected Tűzlabda tuzlabda;
-    protected Coordinate cursor = new Coordinate(0, 0);
+    protected BoardLocation cursor = new BoardLocation(0, 0);
     protected long tick = 0;
     protected VillamCsapas villamCsapas;
     protected int otherManna;
@@ -34,7 +34,7 @@ public class PlayingState extends GameState {
         this.hero = hero;
         int i = 0;
         for (Unit unit : units) {
-            this.units.add(new UnitWithCoordinate(unit, new Coordinate(0, i++)));
+            this.units.add(new UnitOnBoard(unit, new BoardLocation(0, i++)));
         }
         if (feltamasztas) this.feltamasztas = new Feltamasztas();
         if (tuzlabda) this.tuzlabda = new Tűzlabda();
@@ -128,15 +128,15 @@ public class PlayingState extends GameState {
         }
 
         // units
-        for (UnitWithCoordinate unit : units) {
+        for (UnitOnBoard unit : units) {
             graphics.setColor(new Color(0, 255, 0, 127));
-            graphics.fillRect(196 + unit.coordinate.x * 32, 5 + unit.coordinate.y * 32, 32, 32);
+            graphics.fillRect(196 + unit.coordinate.getX() * 32, 5 + unit.coordinate.getY() * 32, 32, 32);
         }
 
         // cursor
         if (isCursorVisible()) {
             graphics.setColor(new Color(255, 255, 0, 127));
-            graphics.fillRect(196 + cursor.x * 32, 5 + cursor.y * 32, 32, 32);
+            graphics.fillRect(196 + cursor.getX() * 32, 5 + cursor.getY() * 32, 32, 32);
         }
 
         // instructions
@@ -145,7 +145,7 @@ public class PlayingState extends GameState {
         graphics.drawString("Use arrows to navigate, space or enter to select and escape or backspace to go back", 10, WindowManager.HEIGHT - 30);
 
         // unit info
-        for (UnitWithCoordinate unit : units) {
+        for (UnitOnBoard unit : units) {
             if (unit.coordinate.equals(cursor)) {
                 graphics.setColor(Color.WHITE);
                 graphics.setFont(new Font("Arial", Font.BOLD, 14));
@@ -174,51 +174,13 @@ public class PlayingState extends GameState {
         EASY, MEDIUM, HARD
     }
 
-    public static class Coordinate {
-        private int x;
-        private int y;
-
-        public Coordinate(int x, int y) {
-            setX(x);
-            setY(y);
-        }
-
-        public int getX() {
-            return x;
-        }
-
-        public void setX(int x) {
-            this.x = Math.min(11, Math.max(0, x));
-        }
-
-        public int getY() {
-            return y;
-        }
-
-        public void setY(int y) {
-            this.y = Math.min(11, Math.max(0, y));
-        }
 
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Coordinate that = (Coordinate) o;
-            return x == that.x && y == that.y;
-        }
+    protected static class UnitOnBoard extends Unit {
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(x, y);
-        }
-    }
+        BoardLocation coordinate;
 
-    protected static class UnitWithCoordinate extends Unit {
-
-        Coordinate coordinate;
-
-        public UnitWithCoordinate(Unit unit, Coordinate coordinate) {
+        public UnitOnBoard(Unit unit, BoardLocation coordinate) {
             super(unit);
             this.coordinate = coordinate;
         }

@@ -4,8 +4,8 @@ import framework.gamestates.GameState;
 import framework.gamestates.GameStateManager;
 import framework.gui.WindowManager;
 import game.payable.Hero;
-import game.payable.ShopItemToGameItem;
 import game.payable.Unit;
+import game.util.ShopItem;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,7 +17,7 @@ import java.util.Objects;
 public class ShopState extends GameState {
     final static protected Color selectedColor = Color.red;
     public final int initialGold;
-    private final ShopItem<UnitNames>[] units = new ShopItem[]{new ShopItem<>(UnitNames.Foldmuves, 2), new ShopItem<>(UnitNames.Ijasz, 5), new ShopItem<>(UnitNames.Griff, 10),
+    private final ShopItem<Unit.Type>[] units = new ShopItem[]{new ShopItem<>(Unit.Type.FOLDMUVES, 2), new ShopItem<>(Unit.Type.IJASZ, 5), new ShopItem<>(Unit.Type.GRIFF, 10),
             /*, new ShopItem("Unit4", 15), new ShopItem("Unit5", 20), new ShopItem("Unit6", 30)*/};
     protected boolean boughtVillamcsapas = false;
     protected boolean boughtTuzlabda = false;
@@ -80,7 +80,7 @@ public class ShopState extends GameState {
         // draw units
         for (int i = 0; i < units.length; i++) {
             graphics.setColor(i + values.length == cursorIndex ? selectedColor : Color.BLACK);
-            String name = units[i].name + " (" + units[i].cost + " arany): " + units[i].num;
+            String name = units[i].type + " (" + units[i].cost + " arany): " + units[i].amount;
             graphics.drawString(name, 450, 80 + i * 30);
         }
 
@@ -109,11 +109,13 @@ public class ShopState extends GameState {
     protected void keyPressed(int keyCode) {
         switch (keyCode) {
             case KeyEvent.VK_ENTER -> {
-                if (Arrays.stream(units).allMatch((unit) -> unit.num == 0)) {
+                if (Arrays.stream(units).allMatch((unit) -> unit.amount == 0)) {
                     JOptionPane.showMessageDialog(null, "You can't start the game without units!");
                 } else {
-                    ArrayList<Unit> u = ShopItemToGameItem.createUnits(units);
-                    gameStateManager.stackState(new PlayingState(gameStateManager, hero, u, boughtVillamcsapas, boughtTuzlabda, boughtFeltamasztas));
+                    ArrayList<Unit> us = new ArrayList<>();
+                    for (var u : units)
+                        if (u.amount > 0) us.add(new Unit(u.type, u.amount));
+                    gameStateManager.stackState(new PlayingState(gameStateManager, hero, us, boughtVillamcsapas, boughtTuzlabda, boughtFeltamasztas));
                 }
             }
             case KeyEvent.VK_UP -> cursorIndex = Math.max(0, cursorIndex - 1);
@@ -138,7 +140,7 @@ public class ShopState extends GameState {
                                 JOptionPane.showMessageDialog(null, "Nincs elég aranyad!");
                             } else {
                                 gold -= units[j].cost;
-                                units[j].num++;
+                                units[j].amount++;
                             }
                         }
                     }
@@ -190,9 +192,9 @@ public class ShopState extends GameState {
                 } else if (cursorIndex < Hero.Skill.values().length + units.length) {
                     int i = cursorIndex - Hero.Skill.values().length;
                     for (int j = 0; j < units.length; j++) {
-                        if (i == j && units[j].num > 0) {
+                        if (i == j && units[j].amount > 0) {
                             gold += units[j].cost;
-                            units[j].num--;
+                            units[j].amount--;
                         }
                     }
                 } else {
@@ -234,20 +236,6 @@ public class ShopState extends GameState {
     }
 
 
-    public enum UnitNames {
-        Foldmuves, Ijasz, Griff;
-
-        @Override
-        public String toString() {
-            return switch (this) {
-                case Foldmuves -> "Földműves";
-                case Ijasz -> "Íjász";
-                case Griff -> "Griff";
-            };
-        }
-    }
-
-
     public enum MagicNames {
         Villamcsapas, Tuzlabda, Feltamasztas;
 
@@ -261,15 +249,5 @@ public class ShopState extends GameState {
         }
     }
 
-    public static class ShopItem<T> {
-        public T name;
-        public int cost;
-        public int num;
 
-        public ShopItem(T name, int cost) {
-            this.name = name;
-            this.cost = cost;
-            this.num = 0;
-        }
-    }
 }

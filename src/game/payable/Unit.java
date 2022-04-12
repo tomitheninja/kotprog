@@ -23,13 +23,6 @@ public class Unit {
     protected int health;
 
     Unit(Type type, int minAttack, int maxAttack, int maxHealth, int movement, int initiative, SpecialAction specialAction) {
-       /* if (type == null) throw new IllegalArgumentException("Type cannot be null");
-        if (minAttack <= 0) throw new IllegalArgumentException("minAttack must be positive");
-        if (maxAttack < minAttack) throw new IllegalArgumentException("maxAttack must be >= to minAttack");
-        if (maxHealth <= 0) throw new IllegalArgumentException("maxHealth must be positive");
-        if (movement <= 0) throw new IllegalArgumentException("movement must be positive");
-        if (initiative <= 0) throw new IllegalArgumentException("initiative must be positive");
-        if (specialAction == null) throw new IllegalArgumentException("specialAction cannot be null");*/
         this.type = type;
         this.minAttack = minAttack;
         this.maxAttack = maxAttack;
@@ -41,13 +34,18 @@ public class Unit {
     }
 
     public Unit(Type type, int amount) {
-        this(timesUnit(type.getUnit(), amount));
+        this(timesUnit(type.asUnit(), amount));
+        if (amount < 1) throw new IllegalArgumentException("amount must be positive");
     }
 
     public Unit(Unit u) {
         this(u.type, u.minAttack, u.maxAttack, u.maxHealth, u.movement, u.initiative, u.specialAction);
+        this.health = u.maxHealth; // Hide the warning
     }
 
+    /**
+     * Refactored to avoid error
+     */
     private static Unit timesUnit(Unit u, int amount) {
         return new Unit(u.type, u.minAttack * amount, u.maxAttack * amount, u.maxHealth * amount, u.movement, u.initiative, u.specialAction);
     }
@@ -105,7 +103,7 @@ public class Unit {
             };
         }
 
-        private Unit getUnit() {
+        private Unit asUnit() {
             return switch (this) {
                 case FOLDMUVES -> Foldmuves;
                 case IJASZ -> Ijasz;

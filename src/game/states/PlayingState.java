@@ -4,45 +4,31 @@ import framework.gamestates.GameState;
 import framework.gamestates.GameStateManager;
 import framework.gui.WindowManager;
 import game.payable.Hero;
+import game.payable.Magic;
 import game.payable.Unit;
-import game.payable.magic.Feltamasztas;
-import game.payable.magic.Tűzlabda;
-import game.payable.magic.VillamCsapas;
 import game.util.BoardLocation;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.Random;
 
 public class PlayingState extends GameState {
     protected Hero hero;
     protected Hero otherHero;
     protected int manna = 5;
     protected ArrayList<UnitOnBoard> units = new ArrayList<>();
-    protected Feltamasztas feltamasztas;
-    protected Tűzlabda tuzlabda;
     protected BoardLocation cursor = new BoardLocation(0, 0);
     protected long tick = 0;
-    protected VillamCsapas villamCsapas;
-    protected int otherManna;
-    protected Feltamasztas otherFeltamasztas;
-    protected Tűzlabda otherTuzlabda;
-    protected VillamCsapas otherVillamCsapas;
-    public PlayingState(GameStateManager gsm, Hero hero, ArrayList<Unit> units, boolean feltamasztas, boolean tuzlabda, boolean villamCsapas) {
+
+    public PlayingState(GameStateManager gsm, Hero hero, ArrayList<Unit> units) {
         super(gsm);
         this.hero = hero;
         int i = 0;
         for (Unit unit : units) {
-            this.units.add(new UnitOnBoard(unit, new BoardLocation(0, i++)));
+            this.units.add(new UnitOnBoard(unit, new BoardLocation(0, 4 + i++)));
         }
-        if (feltamasztas) this.feltamasztas = new Feltamasztas();
-        if (tuzlabda) this.tuzlabda = new Tűzlabda();
-        if (villamCsapas) this.villamCsapas = new VillamCsapas();
 
-        Random random = new Random();
-
-        otherHero = new Hero(random.nextInt(1, 4), random.nextInt(1, 4), random.nextInt(1, 4), random.nextInt(1, 4), random.nextInt(1, 4), random.nextInt(1, 4));
+        otherHero = new Hero();
     }
 
     protected boolean isCursorVisible() {
@@ -71,23 +57,15 @@ public class PlayingState extends GameState {
 
         graphics.setFont(new Font("Arial", Font.PLAIN, 12));
         graphics.drawString("Manna: " + manna, 10, 45);
-        graphics.drawString("Attack: " + hero.getAttack(), 10, 65);
-        graphics.drawString("Defence: " + hero.getDefence(), 10, 80);
-        graphics.drawString("Magic: " + hero.getMagic(), 10, 100);
-        graphics.drawString("Knowledge: " + hero.getKnowledge(), 10, 120);
-        graphics.drawString("Morale: " + hero.getMorale(), 10, 140);
-        graphics.drawString("Luck: " + hero.getLuck(), 10, 160);
+        graphics.drawString("Attack: " + hero.attack, 10, 65);
+        graphics.drawString("Defence: " + hero.defence, 10, 80);
+        graphics.drawString("Magic: " + hero.magic, 10, 100);
+        graphics.drawString("Knowledge: " + hero.knowledge, 10, 120);
+        graphics.drawString("Morale: " + hero.morale, 10, 140);
+        graphics.drawString("Luck: " + hero.luck, 10, 160);
         int nextY = 180;
-        if (tuzlabda != null) {
-            graphics.drawString("Tűzlabda (" + tuzlabda.getMannaCost() + " manna)", 10, nextY);
-            nextY += 20;
-        }
-        if (villamCsapas != null) {
-            graphics.drawString("VillamCsapas (" + villamCsapas.getMannaCost() + " manna)", 10, nextY);
-            nextY += 20;
-        }
-        if (feltamasztas != null) {
-            graphics.drawString("Feltamasztás (" + feltamasztas.getMannaCost() + " manna)", 10, nextY);
+        for (Magic m : hero.magics) {
+            graphics.drawString(m.name, 10, nextY);
             nextY += 20;
         }
 
@@ -98,26 +76,13 @@ public class PlayingState extends GameState {
         graphics.drawString("Enemy", WindowManager.WIDTH - 200, nextY);
 
         graphics.setFont(new Font("Arial", Font.PLAIN, 12));
-        graphics.drawString("Manna: " + otherManna, WindowManager.WIDTH - 200, nextY + 20);
-        graphics.drawString("Attack: " + otherHero.getAttack(), WindowManager.WIDTH - 200, nextY + 40);
-        graphics.drawString("Defence: " + otherHero.getDefence(), WindowManager.WIDTH - 200, nextY + 55);
-        graphics.drawString("Magic: " + otherHero.getMagic(), WindowManager.WIDTH - 200, nextY + 75);
-        graphics.drawString("Knowledge: " + otherHero.getKnowledge(), WindowManager.WIDTH - 200, nextY + 95);
-        graphics.drawString("Morale: " + otherHero.getMorale(), WindowManager.WIDTH - 200, nextY + 115);
-        graphics.drawString("Luck: " + otherHero.getLuck(), WindowManager.WIDTH - 200, nextY + 135);
-        nextY += 170;
-        if (otherTuzlabda != null) {
-            graphics.drawString("Tűzlabda (" + otherTuzlabda.getMannaCost() + " manna)", WindowManager.WIDTH - 200, nextY);
-            nextY += 20;
-        }
-        if (otherVillamCsapas != null) {
-            graphics.drawString("VillamCsapas (" + otherVillamCsapas.getMannaCost() + " manna)", WindowManager.WIDTH - 200, nextY);
-            nextY += 20;
-        }
-        if (otherFeltamasztas != null) {
-            graphics.drawString("Feltamasztás (" + otherFeltamasztas.getMannaCost() + " manna)", WindowManager.WIDTH - 200, nextY);
-            nextY += 20;
-        }
+        graphics.drawString("Manna: " + otherHero.getManna(), WindowManager.WIDTH - 200, nextY + 20);
+        graphics.drawString("Attack: " + otherHero.attack, WindowManager.WIDTH - 200, nextY + 40);
+        graphics.drawString("Defence: " + otherHero.defence, WindowManager.WIDTH - 200, nextY + 55);
+        graphics.drawString("Magic: " + otherHero.magic, WindowManager.WIDTH - 200, nextY + 75);
+        graphics.drawString("Knowledge: " + otherHero.knowledge, WindowManager.WIDTH - 200, nextY + 95);
+        graphics.drawString("Morale: " + otherHero.morale, WindowManager.WIDTH - 200, nextY + 115);
+        graphics.drawString("Luck: " + otherHero.luck, WindowManager.WIDTH - 200, nextY + 135);
 
         // 12x12 grid
         graphics.setColor(Color.WHITE);
@@ -149,7 +114,7 @@ public class PlayingState extends GameState {
             if (unit.coordinate.equals(cursor)) {
                 graphics.setColor(Color.WHITE);
                 graphics.setFont(new Font("Arial", Font.BOLD, 14));
-                graphics.drawString("Unit: " + (unit.toString()), 10, WindowManager.HEIGHT - 15);
+                graphics.drawString("Unit: " + (unit), 10, WindowManager.HEIGHT - 15);
             }
         }
     }
@@ -173,7 +138,6 @@ public class PlayingState extends GameState {
     public enum Difficulty {
         EASY, MEDIUM, HARD
     }
-
 
 
     protected static class UnitOnBoard extends Unit {

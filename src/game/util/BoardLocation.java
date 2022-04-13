@@ -6,9 +6,27 @@ public class BoardLocation {
     private int x;
     private int y;
 
+    public BoardLocation(BoardLocation other) {
+        this.x = other.x;
+        this.y = other.y;
+    }
+
     public BoardLocation(int x, int y) {
         setX(x);
         setY(y);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BoardLocation that = (BoardLocation) o;
+        return x == that.x && y == that.y;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y);
     }
 
     public int getX() {
@@ -28,16 +46,4 @@ public class BoardLocation {
     }
 
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        BoardLocation that = (BoardLocation) o;
-        return x == that.x && y == that.y;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(x, y);
-    }
 }

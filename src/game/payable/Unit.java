@@ -12,7 +12,7 @@ public class Unit {
     private static final SpecialAction emptySpecialAction = new SpecialAction() {
         @Override
         public void action() {
-
+            System.out.println("Empty special action");
         }
     };
 

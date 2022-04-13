@@ -11,6 +11,8 @@ import game.util.BoardLocation;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class PlayingState extends GameState {
     // respect the lifetime of unit by using coordinate to look up the unit
@@ -21,6 +23,7 @@ public class PlayingState extends GameState {
     protected ArrayList<UnitOnBoard> units = new ArrayList<>();
     protected BoardLocation cursor = new BoardLocation(0, 0);
     protected long tick = 0;
+    private Set<Unit.Type> movedUnits = new HashSet<>();
 
     public PlayingState(GameStateManager gsm, Hero hero, ArrayList<Unit> units) {
         super(gsm);
@@ -48,6 +51,9 @@ public class PlayingState extends GameState {
 
     @Override
     protected void render(Graphics graphics) {
+        UnitOnBoard u = units.stream().filter(unit -> unit.coordinate.equals(selectedCoordinate)).findFirst().orElse(null);
+
+
         // black background
         graphics.setColor(Color.BLACK);
         graphics.fillRect(0, 0, WindowManager.WIDTH, WindowManager.HEIGHT);
@@ -96,16 +102,18 @@ public class PlayingState extends GameState {
             if (cursor.equals(unit.coordinate)) hoveredUnit = unit;
         }
 
-        if (selectedCoordinate != null && units.stream().) {
+        // areas where unit can move
+        if (selectedCoordinate != null && u != null) {
             graphics.setColor(new Color(255, 255, 255, 64));
-            for (int i = 0; i < 12; i++) {
-                for (int j = 0; j < 12; j++) {
-                    BoardLocation loc = new BoardLocation(i, j);
-                    if (selectedCoordinate.canReach(loc) && units.stream().noneMatch(u -> u.coordinate.equals(loc))) {
-                        graphics.fillRect(196 + i * 32, 5 + j * 32, 32, 32);
+            for (int x = 0; x < 12; x++) {
+                for (int y = 0; y < 12; y++) {
+                    BoardLocation loc = new BoardLocation(x, y);
+                    if (u.canReach(loc) && units.stream().noneMatch(unit -> unit.coordinate.equals(loc))) {
+                        graphics.fillRect(196 + x * 32, 5 + y * 32, 32, 32);
                     }
                 }
             }
+
         }
 
         // cursor
@@ -125,15 +133,12 @@ public class PlayingState extends GameState {
         // instructions
         graphics.setColor(Color.WHITE);
         graphics.setFont(new Font("Arial", Font.PLAIN, 14));
-        graphics.drawString("Use arrows to navigate, space or enter to select and escape or backspace to go back", 10, WindowManager.HEIGHT - 30);
-
-        // unit info
-        for (UnitOnBoard unit : units) {
-            if (unit.coordinate.equals(cursor)) {
-                graphics.setColor(Color.WHITE);
-                graphics.setFont(new Font("Arial", Font.BOLD, 14));
-                graphics.drawString("Unit: " + (unit), 10, WindowManager.HEIGHT - 15);
-            }
+        if (u == null) {
+            graphics.drawString("Use arrows to navigate, space or enter to select and escape to undo selection", 10, WindowManager.HEIGHT - 30);
+        } else {
+            graphics.drawString("Use arrows then space to move or attack. Press space again to use special action. Or select an other unit", 10, WindowManager.HEIGHT - 30);
+            // TODO: enemy units
+            graphics.drawString("Unit: " + u, 10, WindowManager.HEIGHT - 10);
         }
     }
 
@@ -144,14 +149,44 @@ public class PlayingState extends GameState {
             case KeyEvent.VK_DOWN -> cursor.setY(cursor.getY() + 1);
             case KeyEvent.VK_LEFT -> cursor.setX(cursor.getX() - 1);
             case KeyEvent.VK_RIGHT -> cursor.setX(cursor.getX() + 1);
-            case KeyEvent.VK_ENTER | KeyEvent.VK_SPACE -> {
-                selectedCoordinate = null;
-                for (UnitOnBoard u : units)
-                    if (u.coordinate == cursor) {
-                        selectedCoordinate = cursor;
-                        return;
+            case KeyEvent.VK_ENTER, KeyEvent.VK_SPACE -> {
+                // selected unit
+                UnitOnBoard selected = units.stream().filter(unit -> unit.coordinate.equals(selectedCoordinate)).findFirst().orElse(null);
+                // unit under the cursor
+                UnitOnBoard hovered = units.stream().filter(unit -> unit.coordinate.equals(cursor)).findFirst().orElse(null);
+
+                // set selected unit
+                if (selected == null && hovered != null)
+                    selectedCoordinate = new BoardLocation(cursor);
+
+                // clear selection. Not sure if this is actually needed
+                if (selected == null && hovered == null)
+                    selectedCoordinate = null;
+
+                // move unit
+                if (selected != null && hovered == null && selected.canReach(cursor)) {
+                    if (!movedUnits.contains(selected.type)) {
+                        selected.coordinate = new BoardLocation(cursor);
+                        movedUnits.add(selected.type);
+                    }  else {
+                        System.out.println("Unit already moved this turn");
                     }
+                }
+
+                if (selected != null && hovered != null) {
+                    if (hovered.coordinate.equals(selectedCoordinate)) {
+                        // special action
+                        selected.specialAction.action();
+                        selectedCoordinate = null;
+                    } else {
+                        // change unit selection
+                        if (units.stream().anyMatch(unit -> unit.coordinate.equals(cursor)))
+                            selectedCoordinate = new BoardLocation(cursor);
+                    }
+                }
+                ;
             }
+            case KeyEvent.VK_ESCAPE -> selectedCoordinate = null;
         }
 
     }

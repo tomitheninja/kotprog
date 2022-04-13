@@ -13,6 +13,8 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
 public class PlayingState extends GameState {
+    // respect the lifetime of unit by using coordinate to look up the unit
+    protected BoardLocation selectedCoordinate;
     protected Hero hero;
     protected Hero otherHero;
     protected int manna = 5;
@@ -84,24 +86,40 @@ public class PlayingState extends GameState {
         graphics.drawString("Morale: " + otherHero.morale, WindowManager.WIDTH - 200, nextY + 115);
         graphics.drawString("Luck: " + otherHero.luck, WindowManager.WIDTH - 200, nextY + 135);
 
+
+        // units
+        UnitOnBoard hoveredUnit = null;
+        for (UnitOnBoard unit : units) {
+            graphics.drawImage(unit.img.getImage(), 196 + unit.coordinate.getX() * 32, 5 + unit.coordinate.getY() * 32, 32, 32, null);
+            graphics.setColor(new Color(0, 255, 0, 127));
+            graphics.fillRect(196 + unit.coordinate.getX() * 32, 32 + 5 + unit.coordinate.getY() * 32 - 4, 32 * unit.getHealth() / unit.maxHealth, 4);
+            if (cursor.equals(unit.coordinate)) hoveredUnit = unit;
+        }
+
+        if (selectedCoordinate != null && units.stream().) {
+            graphics.setColor(new Color(255, 255, 255, 64));
+            for (int i = 0; i < 12; i++) {
+                for (int j = 0; j < 12; j++) {
+                    BoardLocation loc = new BoardLocation(i, j);
+                    if (selectedCoordinate.canReach(loc) && units.stream().noneMatch(u -> u.coordinate.equals(loc))) {
+                        graphics.fillRect(196 + i * 32, 5 + j * 32, 32, 32);
+                    }
+                }
+            }
+        }
+
+        // cursor
+        if (isCursorVisible()) {
+            graphics.setColor(new Color(255, 255, 0, 96));
+            graphics.fillRect(196 + cursor.getX() * 32, 5 + cursor.getY() * 32, 32, 32);
+        }
+
         // 12x12 grid
         graphics.setColor(Color.WHITE);
         for (int i = 0; i < 12; i++) {
             for (int j = 0; j < 12; j++) {
                 graphics.drawRect(196 + i * 32, 5 + j * 32, 32, 32);
             }
-        }
-
-        // units
-        for (UnitOnBoard unit : units) {
-            graphics.setColor(new Color(0, 255, 0, 127));
-            graphics.fillRect(196 + unit.coordinate.getX() * 32, 5 + unit.coordinate.getY() * 32, 32, 32);
-        }
-
-        // cursor
-        if (isCursorVisible()) {
-            graphics.setColor(new Color(255, 255, 0, 127));
-            graphics.fillRect(196 + cursor.getX() * 32, 5 + cursor.getY() * 32, 32, 32);
         }
 
         // instructions
@@ -126,6 +144,14 @@ public class PlayingState extends GameState {
             case KeyEvent.VK_DOWN -> cursor.setY(cursor.getY() + 1);
             case KeyEvent.VK_LEFT -> cursor.setX(cursor.getX() - 1);
             case KeyEvent.VK_RIGHT -> cursor.setX(cursor.getX() + 1);
+            case KeyEvent.VK_ENTER | KeyEvent.VK_SPACE -> {
+                selectedCoordinate = null;
+                for (UnitOnBoard u : units)
+                    if (u.coordinate == cursor) {
+                        selectedCoordinate = cursor;
+                        return;
+                    }
+            }
         }
 
     }
@@ -147,6 +173,16 @@ public class PlayingState extends GameState {
         public UnitOnBoard(Unit unit, BoardLocation coordinate) {
             super(unit);
             this.coordinate = coordinate;
+        }
+
+        public boolean canReach(BoardLocation target) {
+            int x = coordinate.getX();
+            int y = coordinate.getY();
+            int tx = target.getX();
+            int ty = target.getY();
+            int dx = Math.abs(x - tx);
+            int dy = Math.abs(y - ty);
+            return dx + dy <= movement;
         }
     }
 }

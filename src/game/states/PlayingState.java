@@ -113,8 +113,8 @@ public class PlayingState extends GameState {
 
     private void drawBoard(Graphics graphics) {
         graphics.setColor(Color.WHITE);
-        for (int i = 0; i < 12; i++) {
-            for (int j = 0; j < 12; j++) {
+        for (int i = 0; i < BoardLocation.WIDTH; i++) {
+            for (int j = 0; j < BoardLocation.HEIGHT; j++) {
                 graphics.drawRect(196 + i * 32, 5 + j * 32, 32, 32);
             }
         }
@@ -127,8 +127,8 @@ public class PlayingState extends GameState {
 
     private void drawReachableFields(Graphics graphics) {
         graphics.setColor(new Color(255, 255, 255, 48));
-        for (int x = 0; x < 12; x++) {
-            for (int y = 0; y < 12; y++) {
+        for (int x = 0; x < BoardLocation.WIDTH; x++) {
+            for (int y = 0; y < BoardLocation.HEIGHT; y++) {
                 BoardLocation loc = new BoardLocation(x, y);
                 boolean noFriendlyUnitHere = units.stream()
                         .filter(unit -> unit.team == Team.PLAYER)

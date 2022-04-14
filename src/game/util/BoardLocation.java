@@ -3,12 +3,10 @@ package game.util;
 import java.util.Objects;
 
 public class BoardLocation {
-    public boolean isNeighbor(BoardLocation other) {
-        return Math.abs(other.x - x) <= 1 && Math.abs(other.y - y) <= 1;
-    }
+    public static final int WIDTH = 12;
+    public static final int HEIGHT = 10;
     private int x;
     private int y;
-
     public BoardLocation(BoardLocation other) {
         this.x = other.x;
         this.y = other.y;
@@ -17,6 +15,10 @@ public class BoardLocation {
     public BoardLocation(int x, int y) {
         setX(x);
         setY(y);
+    }
+
+    public boolean isNeighbor(BoardLocation other) {
+        return Math.abs(other.x - x) <= 1 && Math.abs(other.y - y) <= 1;
     }
 
     @Override
@@ -37,7 +39,7 @@ public class BoardLocation {
     }
 
     public void setX(int x) {
-        this.x = Math.min(11, Math.max(0, x));
+        this.x = Math.min(WIDTH - 1, Math.max(0, x));
     }
 
     public int getY() {
@@ -45,7 +47,7 @@ public class BoardLocation {
     }
 
     public void setY(int y) {
-        this.y = Math.min(11, Math.max(0, y));
+        this.y = Math.min(HEIGHT - 1, Math.max(0, y));
     }
 
 

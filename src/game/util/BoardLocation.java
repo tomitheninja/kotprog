@@ -3,6 +3,9 @@ package game.util;
 import java.util.Objects;
 
 public class BoardLocation {
+    public boolean isNeighbor(BoardLocation other) {
+        return Math.abs(other.x - x) <= 1 && Math.abs(other.y - y) <= 1;
+    }
     private int x;
     private int y;
 

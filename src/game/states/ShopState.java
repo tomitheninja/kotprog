@@ -18,6 +18,8 @@ import java.util.Objects;
 
 public class ShopState extends GameState {
     final static protected Color selectedColor = Color.red;
+    public final Hero enemyHero;
+    public final ArrayList<Unit> enemyUnits;
     public final int initialGold;
     protected final ShopItem<Unit.Type>[] units = new ShopItem[]{new ShopItem<>(Unit.Type.FOLDMUVES, 2), new ShopItem<>(Unit.Type.IJASZ, 5), new ShopItem<>(Unit.Type.GRIFF, 10),};
     protected BuyableMagic[] magics = new BuyableMagic[]{new BuyableMagic(Magic.Villamcsapas), new BuyableMagic(Magic.Tuzlabda), new BuyableMagic(Magic.Feltamasztas),};
@@ -31,6 +33,12 @@ public class ShopState extends GameState {
             throw new IllegalArgumentException("Initial gold must not be negative!");
         }
         this.initialGold = this.gold = initialGold;
+
+        enemyHero = new Hero(1, 1, 1, 1, 1, 1, new Magic[]{});
+        enemyUnits = new ArrayList();
+        enemyUnits.add(new Unit(Unit.Type.FOLDMUVES, 1));
+        enemyUnits.add(new Unit(Unit.Type.IJASZ, 1));
+        enemyUnits.add(new Unit(Unit.Type.GRIFF, 1));
     }
 
     @Override
@@ -112,7 +120,7 @@ public class ShopState extends GameState {
                     ArrayList<Unit> us = new ArrayList<>();
                     for (var u : units) if (u.amount > 0) us.add(new Unit(u.type, u.amount));
                     Hero h = hero.toHero(Arrays.stream(magics).filter((magic) -> magic.bought).map((magic) -> magic.magic).toArray(Magic[]::new));
-                    gameStateManager.stackState(new PlayingState(gameStateManager, h, us));
+                    gameStateManager.stackState(new PlayingState(gameStateManager, h, enemyHero, us, enemyUnits));
                 }
             }
             case KeyEvent.VK_UP -> cursorIndex = Math.max(0, cursorIndex - 1);
@@ -176,8 +184,8 @@ public class ShopState extends GameState {
 
 
     private class BuyableMagic {
-        public boolean bought = false;
         public final Magic magic;
+        public boolean bought = false;
 
         public BuyableMagic(Magic magic) {
             this.magic = magic;

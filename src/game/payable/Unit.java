@@ -55,6 +55,22 @@ public class Unit {
         return new Unit(u.type, u.minAttack * amount, u.maxAttack * amount, u.maxHealth * amount, u.movement, u.initiative, u.specialAction, u.img);
     }
 
+    public Type getType() {
+        return type;
+    }
+
+    public int getMaxHealth() {
+        return maxHealth;
+    }
+
+    public int getMovement() {
+        return movement;
+    }
+
+    public int getInitiative() {
+        return initiative;
+    }
+
     @Override
     public String toString() {
         return type + " with health: " + health + "/" + maxHealth + ". Attack:" + getMinAttack() + (getMinAttack() != getMaxAttack() ? "-" + getMaxAttack() : "") + ". Has initiative of " + initiative;

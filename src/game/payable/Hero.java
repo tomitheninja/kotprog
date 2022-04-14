@@ -16,15 +16,16 @@ public class Hero {
     public final Magic[] magics;
     protected int manna;
 
-    private Hero(int attack, int defence, int magic, int knowledge, int morale, int luck, Magic[] magics) {
-        this.attack = attack;
-        this.defence = defence;
-        this.magic = magic;
-        this.knowledge = knowledge;
-        this.morale = morale;
-        this.luck = luck;
+    public Hero(int attack, int defence, int magic, int knowledge, int morale, int luck, Magic[] magics) {
+        this.attack = Math.min(10, Math.max(0, attack));
+        this.defence = Math.min(10, Math.max(0, defence));
+        this.magic = Math.min(10, Math.max(0, magic));
+        this.knowledge = Math.min(10, Math.max(0, knowledge));
+        this.morale = Math.min(10, Math.max(0, morale));
+        this.luck = Math.min(10, Math.max(0, luck));
         this.magics = magics;
     }
+
 
     /**
      * random hero with random stats

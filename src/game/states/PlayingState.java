@@ -6,6 +6,7 @@ import framework.gui.WindowManager;
 import game.payable.Hero;
 import game.payable.Unit;
 import game.util.BoardLocation;
+import game.util.InstructionAlert;
 import game.util.Team;
 import game.util.UnitOnBoard;
 
@@ -284,25 +285,7 @@ public class PlayingState extends GameState {
     }
 
 
-    private static class InstructionAlert {
-        public final String text;
-        public final int numTicks;
-        protected int ticks;
 
-        public InstructionAlert(String text, int numTicks) {
-            this.numTicks = numTicks;
-            this.text = text;
-            this.ticks = 0;
-        }
-
-        public void tick() {
-            ticks++;
-        }
-
-        public boolean isDone() {
-            return ticks >= numTicks;
-        }
-    }
 
 
 }

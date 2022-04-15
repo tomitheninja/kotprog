@@ -42,12 +42,5 @@ class HeroTest {
         });
     }
 
-    @Test
-    public void testRandom() {
-        for (int i = 0; i < 100; i++) {
-            Hero h = new Hero();
-            assertTrue(1 <= h.attack);
-            assertTrue(h.attack <= 10);
-        }
-    }
+
 }

@@ -22,7 +22,7 @@ public class ShopState extends GameState {
     public final ArrayList<Unit> enemyUnits;
     public final int initialGold;
     protected final ShopItem<Unit.Type>[] units = new ShopItem[]{new ShopItem<>(Unit.Type.FOLDMUVES, 2), new ShopItem<>(Unit.Type.IJASZ, 5), new ShopItem<>(Unit.Type.GRIFF, 10),};
-    protected BuyableMagic[] magics = new BuyableMagic[]{new BuyableMagic(Magic.Villamcsapas), new BuyableMagic(Magic.Tuzlabda), new BuyableMagic(Magic.Feltamasztas),};
+    protected PurchasableMagic[] magics = new PurchasableMagic[]{new PurchasableMagic(Magic.Villamcsapas), new PurchasableMagic(Magic.Tuzlabda), new PurchasableMagic(Magic.Feltamasztas),};
     protected int cursorIndex = 0;
     ShopHero hero = new ShopHero();
     private int gold;
@@ -48,8 +48,6 @@ public class ShopState extends GameState {
 
     @Override
     protected void render(Graphics graphics) {
-        int nextCursorIdx = 0;
-        Toolkit t = Toolkit.getDefaultToolkit();
 
         // background
         graphics.setColor(Color.WHITE);
@@ -78,7 +76,7 @@ public class ShopState extends GameState {
             graphics.drawString(skill.name() + ": " + hero.getSkillLevel(skill), 200, 80 + (skill.ordinal()) * 60);
         }
 
-        // draw seperator
+        // draw separator
         graphics.setColor(Color.BLACK);
         graphics.drawLine(15, 400, WindowManager.WIDTH - 15, 400);
         graphics.drawLine(420, 55, 420, 400);
@@ -91,7 +89,7 @@ public class ShopState extends GameState {
             graphics.drawString(name, 450, 80 + i * 30);
         }
 
-        // draw seperator
+        // draw separator
         graphics.setColor(Color.BLACK);
         graphics.drawLine(420, 60 + units.length * 30, WindowManager.WIDTH, 60 + units.length * 30);
 
@@ -101,7 +99,7 @@ public class ShopState extends GameState {
 
         for (int i = 0; i < magics.length; i++) {
             graphics.setColor(i + values.length + units.length == cursorIndex ? selectedColor : Color.BLACK);
-            graphics.drawString(magics[i].magic.name + " (" + magics[i].magic.price + " arany): " + (magics[i].bought ? "van" : "nincs"), 450, 80 + (i + units.length) * 30);
+            graphics.drawString(magics[i].magic.type + " (" + magics[i].magic.price + " arany): " + (magics[i].bought ? "van" : "nincs"), 450, 80 + (i + units.length) * 30);
         }
 
         // instructions
@@ -118,8 +116,8 @@ public class ShopState extends GameState {
                     JOptionPane.showMessageDialog(null, "You can't start the game without units!");
                 } else {
                     ArrayList<Unit> us = new ArrayList<>();
-                    for (var u : units) if (u.amount > 0) us.add(new Unit(u.type, u.amount));
                     Hero h = hero.toHero(Arrays.stream(magics).filter((magic) -> magic.bought).map((magic) -> magic.magic).toArray(Magic[]::new));
+                    for (var u : units) if (u.amount > 0) us.add(new Unit(u.type, u.amount));
                     gameStateManager.stackState(new PlayingState(gameStateManager, h, enemyHero, us, enemyUnits));
                 }
             }
@@ -183,11 +181,11 @@ public class ShopState extends GameState {
     }
 
 
-    private class BuyableMagic {
+    private class PurchasableMagic {
         public final Magic magic;
         public boolean bought = false;
 
-        public BuyableMagic(Magic magic) {
+        public PurchasableMagic(Magic magic) {
             this.magic = magic;
         }
 

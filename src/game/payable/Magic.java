@@ -1,23 +1,16 @@
 package game.payable;
 
 public class Magic {
-    public static final Magic Villamcsapas = new Magic("Villámcapás", 60, 5, "Egy kiválasztott ellenséges egységre (varázserő * 30) sebzés okozása", null);
-    public static final Magic Tuzlabda = new Magic("Tűzlabda", 120, 9, "Egy kiválasztott mező körüli 3x3-as területen lévő összes (saját, illetve ellenséges) egységre (varázserő * 20) sebzés okozása", null);
-    public static final Magic Feltamasztas = new Magic("Feltámasztás", 120, 6, "Egy kiválasztott saját egység feltámasztása. Maximális gyógyítás mértéke: (varázserő * 50)", null);
-    private static final MagicAction emptyMagicAction = new MagicAction() {
-        @Override
-        public void action() {
-        }
-    };
-    public final String description;
+    public static final Magic Villamcsapas = new Magic(Type.Lighting, 60, 5);
+    public static final Magic Tuzlabda = new Magic(Type.Fireball, 120, 9);
+    public static final Magic Feltamasztas = new Magic(Type.Healing, 120, 6);
     public final int price;
-    public final String name;
+    public final Type type;
     public final int mana;
-    public final MagicAction action;
 
-    private Magic(String name, int price, int mana, String description, MagicAction action) {
-        if (name == null) {
-            throw new IllegalArgumentException("name cannot be null");
+    private Magic(Type type, int price, int mana) {
+        if (type == null) {
+            throw new IllegalArgumentException("type cannot be null");
         }
         if (price < 1) {
             throw new IllegalArgumentException("price must be positive");
@@ -25,22 +18,27 @@ public class Magic {
         if (mana < 1) {
             throw new IllegalArgumentException("mana must be positive");
         }
-        if (description == null) {
-            throw new IllegalArgumentException("description must not be null");
-        }
-        this.name = name;
+        this.type = type;
         this.price = price;
         this.mana = mana;
-        this.description = description;
-        this.action = action != null ? action : emptyMagicAction;
     }
 
-    @Override
-    public String toString() {
-        return name;
-    }
+    public enum Type {
+        Lighting,
+        Fireball,
+        Healing;
 
-    public interface MagicAction {
-        void action();
+        @Override
+        public String toString() {
+            return switch (this) {
+                case Lighting -> "Villámcsapás";
+                case Fireball -> "Tűzlabda";
+                case Healing -> "Gyógyítás";
+            };
+        }
+
+        public String getDescription() {
+            return "TODO: implement Magic.description";
+        }
     }
 }

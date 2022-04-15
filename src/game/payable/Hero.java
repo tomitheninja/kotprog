@@ -24,31 +24,11 @@ public class Hero {
         this.morale = Math.min(10, Math.max(0, morale));
         this.luck = Math.min(10, Math.max(0, luck));
         this.magics = magics;
-    }
-
-
-    /**
-     * random hero with random stats
-     */
-    public Hero() {
-        Random r = new Random();
-
-        this.attack = RandomSkillStrength.get();
-        this.defence = RandomSkillStrength.get();
-        this.magic = RandomSkillStrength.get();
-        this.knowledge = RandomSkillStrength.get();
-        this.luck = RandomSkillStrength.get();
-        this.morale = RandomSkillStrength.get();
-        this.magics = Arrays.stream(new Magic[]{Magic.Villamcsapas, Magic.Tuzlabda, Magic.Feltamasztas,}).filter(s -> r.nextBoolean()).toArray(Magic[]::new);
+        this.manna = this.knowledge * 10;
     }
 
     public int getManna() {
         return manna;
-    }
-
-    public int addManna(int manna) {
-        this.manna += manna;
-        return this.manna;
     }
 
     public int spendManna(int manna) {

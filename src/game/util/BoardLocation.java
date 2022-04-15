@@ -17,8 +17,12 @@ public class BoardLocation {
         setY(y);
     }
 
+    public int distanceTo(BoardLocation other) {
+        return Math.abs(other.x - x) + Math.abs(other.y - y);
+    }
+
     public boolean isNeighbor(BoardLocation other) {
-        return Math.abs(other.x - x) <= 1 && Math.abs(other.y - y) <= 1;
+        return distanceTo(other) == 1;
     }
 
     @Override

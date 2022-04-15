@@ -6,23 +6,17 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class UnitTest {
 
-    Unit.SpecialAction emptyAction = new Unit.SpecialAction() {
-        @Override
-        public void action() {
-        }
-    };
-
     @Test
     void getInitialHealth() {
         int INIT_HEALTH = 100;
-        Unit unit = new Unit(Unit.Type.FOLDMUVES, 1, 1, INIT_HEALTH, 1, 1, emptyAction, null);
+        Unit unit = new Unit(Unit.Type.FOLDMUVES, 1, 1, INIT_HEALTH, 1, 1, null);
         assertEquals(INIT_HEALTH, unit.getHealth());
         assertTrue(unit.isAlive());
     }
 
     @Test
     void takeDamage() {
-        Unit unit = new Unit(Unit.Type.FOLDMUVES, 1, 1, 5, 1, 1, emptyAction, null);
+        Unit unit = new Unit(Unit.Type.FOLDMUVES, 1, 1, 5, 1, 1, null);
         assertEquals(5, unit.getHealth());
 
         // take 4 damage. health should be 1
@@ -41,7 +35,7 @@ class UnitTest {
         final int INIT_MIN_ATTACK = 100;
         final int INIT_MAX_ATTACK = 200;
         final int INIT_HEALTH = 10;
-        Unit unit = new Unit(Unit.Type.GRIFF, INIT_MIN_ATTACK, INIT_MAX_ATTACK, INIT_HEALTH, 1, 1, emptyAction, null);
+        Unit unit = new Unit(Unit.Type.GRIFF, INIT_MIN_ATTACK, INIT_MAX_ATTACK, INIT_HEALTH, 1, 1, null);
         for (int i = 0; i < 100; i++) {
             int attack = unit.getAttack();
             assertTrue(INIT_MIN_ATTACK <= attack && attack <= INIT_MAX_ATTACK);

@@ -1,32 +1,25 @@
 package game.payable;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.Objects;
 import java.util.Random;
 
 public class Unit {
     private static final Random random = new Random();
-    private static final Unit Foldmuves = new Unit(Type.FOLDMUVES, 1, 1, 3, 4, 8, null, new ImageIcon(Objects.requireNonNull(Unit.class.getClassLoader().getResource("falusi_balra.png"))));
-    private static final Unit Ijasz = new Unit(Type.IJASZ, 2, 4, 7, 4, 9, null, new ImageIcon(Objects.requireNonNull(Unit.class.getClassLoader().getResource("varazslo_balra.png"))));
-    private static final Unit Griff = new Unit(Type.GRIFF, 5, 10, 30, 7, 15, null, new ImageIcon(Objects.requireNonNull(Unit.class.getClassLoader().getResource("griff_balra.png"))));
-    private static final SpecialAction emptySpecialAction = new SpecialAction() {
-        @Override
-        public void action() {
-            System.out.println("Empty special action");
-        }
-    };
-
-    public final ImageIcon img;
-    public final Type type;
-    public final int minAttack;
-    public final int maxAttack;
-    public final int maxHealth;
-    public final int movement;
-    public final int initiative;
-    public final SpecialAction specialAction;
+    private static final Unit Foldmuves = new Unit(Type.FOLDMUVES, 1, 1, 3, 4, 8, new ImageIcon(Objects.requireNonNull(Unit.class.getClassLoader().getResource("falusi_balra.png"))));
+    private static final Unit Ijasz = new Unit(Type.IJASZ, 2, 4, 7, 4, 9, new ImageIcon(Objects.requireNonNull(Unit.class.getClassLoader().getResource("varazslo_balra.png"))));
+    private static final Unit Griff = new Unit(Type.GRIFF, 5, 10, 30, 7, 15, new ImageIcon(Objects.requireNonNull(Unit.class.getClassLoader().getResource("griff_balra.png"))));
+    private final ImageIcon img;
+    private final Type type;
+    private final int minAttack;
+    private final int maxAttack;
+    private final int maxHealth;
+    private final int movement;
+    private final int initiative;
     protected int health;
 
-    Unit(Type type, int minAttack, int maxAttack, int maxHealth, int movement, int initiative, SpecialAction specialAction, ImageIcon img) {
+    Unit(Type type, int minAttack, int maxAttack, int maxHealth, int movement, int initiative, ImageIcon img) {
         this.type = type;
         this.minAttack = minAttack;
         this.maxAttack = maxAttack;
@@ -34,7 +27,6 @@ public class Unit {
         this.movement = movement;
         this.initiative = initiative;
         this.health = maxHealth;
-        this.specialAction = specialAction != null ? specialAction : emptySpecialAction;
         this.img = img;
     }
 
@@ -44,7 +36,7 @@ public class Unit {
     }
 
     public Unit(Unit u) {
-        this(u.type, u.minAttack, u.maxAttack, u.maxHealth, u.movement, u.initiative, u.specialAction, u.img);
+        this(u.type, u.minAttack, u.maxAttack, u.maxHealth, u.movement, u.initiative, u.img);
         this.health = u.maxHealth; // Hide the warning
     }
 
@@ -52,7 +44,11 @@ public class Unit {
      * Refactored to avoid error
      */
     private static Unit timesUnit(Unit u, int amount) {
-        return new Unit(u.type, u.minAttack * amount, u.maxAttack * amount, u.maxHealth * amount, u.movement, u.initiative, u.specialAction, u.img);
+        return new Unit(u.type, u.minAttack * amount, u.maxAttack * amount, u.maxHealth * amount, u.movement, u.initiative, u.img);
+    }
+
+    public Image getImage() {
+        return this.img.getImage();
     }
 
     public Type getType() {
@@ -73,7 +69,7 @@ public class Unit {
 
     @Override
     public String toString() {
-        return type + " with health: " + health + "/" + maxHealth + ". Attack:" + getMinAttack() + (getMinAttack() != getMaxAttack() ? "-" + getMaxAttack() : "") + ". Has initiative of " + initiative;
+        return type + " with health: " + health + "/" + maxHealth + ". Attack:" + getMinAttack() + (getMinAttack() != getMaxAttack() ? "-" + getMaxAttack() : "") + ". Has initiative of " + getInitiative();
     }
 
     public int getHealth() {
@@ -94,7 +90,10 @@ public class Unit {
         if (damage < 0) throw new IllegalArgumentException("damage must not be negative");
         health = Math.max(0, health - damage);
         return !isAlive();
+    }
 
+    public void heal(int amount) {
+        health = Math.min(maxHealth, health + amount);
     }
 
     public int getMaxAttack() {
@@ -131,10 +130,6 @@ public class Unit {
                 case GRIFF -> Griff;
             };
         }
-    }
-
-    public interface SpecialAction {
-        void action();
     }
 
 }

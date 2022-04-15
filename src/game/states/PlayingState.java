@@ -4,6 +4,7 @@ import framework.gamestates.GameState;
 import framework.gamestates.GameStateManager;
 import framework.gui.WindowManager;
 import game.payable.Hero;
+import game.payable.Magic;
 import game.payable.Unit;
 import game.util.BoardLocation;
 import game.util.InstructionAlert;
@@ -18,7 +19,7 @@ import java.util.Comparator;
 public class PlayingState extends GameState {
 
     protected Hero hero;
-    protected Hero otherHero;
+    protected Hero enemyHero;
     protected ArrayList<UnitOnBoard> units = new ArrayList<>();
     // TODO: protected ArrayList<UnitOnBoard> enemyUnits = new ArrayList<>();
     protected BoardLocation cursor = new BoardLocation(0, 0);
@@ -31,14 +32,14 @@ public class PlayingState extends GameState {
     public PlayingState(GameStateManager gsm, Hero hero, Hero enemyHero, ArrayList<Unit> units, ArrayList<Unit> enemyUnits) {
         super(gsm);
         this.hero = hero;
+        this.enemyHero = enemyHero;
         int i = 0;
         for (Unit unit : units) {
-            this.units.add(new UnitOnBoard(unit, new BoardLocation(0, 4 + i++), Team.PLAYER));
+            this.units.add(new UnitOnBoard(unit, new BoardLocation(0, 4 + i++), Team.PLAYER, hero));
         }
         for (Unit unit : enemyUnits) {
-            this.units.add(new UnitOnBoard(unit, new BoardLocation(11, 4 + i++), Team.ENEMY));
+            this.units.add(new UnitOnBoard(unit, new BoardLocation(11, 4 + i++), Team.ENEMY, enemyHero));
         }
-        otherHero = enemyHero;
     }
 
     protected boolean isCursorVisible() {
@@ -61,12 +62,12 @@ public class PlayingState extends GameState {
         current = units.stream()
                 .filter(UnitOnBoard::isPlayer)
                 .filter(UnitOnBoard::canMove)
-                .max(Comparator.comparing(UnitOnBoard::getInitiative)).orElse(null);
+                .max(Comparator.comparingInt(UnitOnBoard::getInitiative)).orElse(null);
 
         UnitOnBoard enemyUnit = this.units.stream()
                 .filter(UnitOnBoard::isEnemy)
                 .filter(UnitOnBoard::canMove)
-                .filter(unit -> current == null || unit.initiative > current.initiative)
+                .filter(unit -> current == null || unit.getInitiative() > current.getInitiative())
                 .max(Comparator.comparing(UnitOnBoard::getInitiative))
                 .orElse(null);
         if (enemyUnit != null) {
@@ -75,10 +76,9 @@ public class PlayingState extends GameState {
                     .filter(unit -> unit.coordinate.isNeighbor(enemyUnit.coordinate))
                     .findFirst().orElse(null);
             if (toAttack != null) {
-                boolean isCriticalDamage = UnitOnBoard.fight(enemyUnit, toAttack, otherHero, hero, true);
+                boolean isCriticalDamage = UnitOnBoard.fight(enemyUnit, toAttack, enemyHero, hero, true);
                 if (isCriticalDamage) alert = new InstructionAlert("Critical attack!", 50);
-                if (!enemyUnit.isAlive())
-                 {
+                if (!enemyUnit.isAlive()) {
                     this.units.remove(enemyUnit);
                     enemyUnit.coordinate = new BoardLocation(toAttack.coordinate);
                 }
@@ -135,7 +135,7 @@ public class PlayingState extends GameState {
         String txt;
         graphics.setFont(new Font("Arial", Font.PLAIN, 14));
         if (alert != null) txt = alert.text;
-        else txt = "Use arrows then space to move or attack. Press enter to use special action. Or press Q to skip";
+        else txt = "Use arrows then space to move or attack. Or press Q to skip";
         graphics.drawString(txt, 10, WindowManager.HEIGHT - 30);
     }
 
@@ -173,14 +173,14 @@ public class PlayingState extends GameState {
         for (UnitOnBoard unit : units) {
             final int topLeftX = 196 + unit.coordinate.getX() * 32;
             final int topLeftY = 5 + unit.coordinate.getY() * 32;
-            graphics.drawImage(unit.img.getImage(), topLeftX, topLeftY, 32, 32, null);
+            graphics.drawImage(unit.getImage(), topLeftX, topLeftY, 32, 32, null);
             // health bar
             graphics.setColor(unit.isPlayer() ? new Color(0, 255, 0, 127) : new Color(255, 0, 0, 127));
-            graphics.fillRect(topLeftX, topLeftY + 32 - 4, 32 * unit.getHealth() / unit.maxHealth, 4);
+            graphics.fillRect(topLeftX, topLeftY + 32 - 4, 32 * unit.getHealth() / unit.getMaxHealth(), 4);
             // initiative
             graphics.setColor(Color.WHITE);
             graphics.setFont(new Font("Arial", Font.PLAIN, 10));
-            graphics.drawString(unit.initiative + "", topLeftX + 2, topLeftY + 32 - 2);
+            graphics.drawString(unit.getInitiative() + "", topLeftX + 2, topLeftY + 32 - 2);
         }
     }
 
@@ -189,7 +189,7 @@ public class PlayingState extends GameState {
         graphics.setFont(new Font("Arial", Font.BOLD, 20));
         graphics.drawString("Enemy", WindowManager.WIDTH - 200, 20);
 
-        drawAbstractHero(graphics, otherHero, WindowManager.WIDTH - 200, 45);
+        drawAbstractHero(graphics, enemyHero, WindowManager.WIDTH - 200, 45);
     }
 
     private void drawAbstractHero(Graphics graphics, Hero hero, int x, int y) {
@@ -216,7 +216,7 @@ public class PlayingState extends GameState {
         graphics.drawString("(1) Attack: " + hero.attack * 10, 10, 200);
         int nextY = 220;
         for (int i = 0; i < hero.magics.length; i++) {
-            graphics.drawString("(" + (i + 2) + ") " + hero.magics[i].name, 10, nextY);
+            graphics.drawString("(" + (i + 2) + ") " + hero.magics[i].type, 10, nextY);
             nextY += 20;
         }
     }
@@ -228,20 +228,19 @@ public class PlayingState extends GameState {
 
     @Override
     protected void keyPressed(int keyCode) {
+        if (current == null) return;
+        Magic m = null;
         switch (keyCode) {
             case KeyEvent.VK_Q -> current.moved = true;
             case KeyEvent.VK_UP -> cursor.setY(cursor.getY() - 1);
             case KeyEvent.VK_DOWN -> cursor.setY(cursor.getY() + 1);
             case KeyEvent.VK_LEFT -> cursor.setX(cursor.getX() - 1);
             case KeyEvent.VK_RIGHT -> cursor.setX(cursor.getX() + 1);
-            case KeyEvent.VK_ENTER, KeyEvent.VK_SPACE -> {
-                // TODO: has selected unit & cursor above enemy unit & dist(a - b) == 1 -> attack
+            case KeyEvent.VK_SPACE -> {
                 if (hovered != null) {
-                    if (hovered.coordinate.equals(current.coordinate)) {
-                        current.specialAction.action();
-                    } else if (hovered.isEnemy()) {
+                    if (hovered.isEnemy()) {
                         if (current.coordinate.isNeighbor(hovered.coordinate)) {
-                            boolean isCriticalDamage = UnitOnBoard.fight(current, hovered, hero, otherHero, true);
+                            boolean isCriticalDamage = UnitOnBoard.fight(current, hovered, hero, enemyHero, true);
                             if (isCriticalDamage) alert = new InstructionAlert("Critical attack!", 50);
                             if (current.isAlive()) current.moved = true;
                             else {
@@ -252,12 +251,12 @@ public class PlayingState extends GameState {
                                 current.coordinate = new BoardLocation(hovered.coordinate);
                                 this.units.remove(hovered);
                             }
-                        } else if (current.type == Unit.Type.IJASZ) {
+                        } else if (current.getType() == Unit.Type.IJASZ) {
                             boolean noEnemyNeighbor = units.stream()
                                     .filter(UnitOnBoard::isEnemy)
                                     .noneMatch(unit -> unit.coordinate.isNeighbor(current.coordinate));
                             if (noEnemyNeighbor) {
-                                boolean isCriticalDamage = UnitOnBoard.fight(current, hovered, hero, otherHero, hovered.type == Unit.Type.IJASZ);
+                                boolean isCriticalDamage = UnitOnBoard.fight(current, hovered, hero, enemyHero, hovered.getType() == Unit.Type.IJASZ);
                                 if (isCriticalDamage) alert = new InstructionAlert("Critical attack!", 50);
                                 if (!current.isAlive()) this.units.remove(current);
                                 if (!hovered.isAlive()) this.units.remove(hovered);
@@ -266,8 +265,6 @@ public class PlayingState extends GameState {
                             }
                         } else alert = new InstructionAlert("Out of range!", 50);
                     }
-                } else if (!current.canMove()) {
-                    alert = new InstructionAlert("Unit already moved", 50);
                 } else if (current.canReach(cursor, obstacles)) {
                     current.coordinate = new BoardLocation(cursor);
                     current.moved = true;
@@ -275,7 +272,67 @@ public class PlayingState extends GameState {
                     alert = new InstructionAlert("Can't move there", 50);
                 }
             }
-            //        case KeyEvent.VK_ESCAPE -> selectedCoordinate = null;
+            case KeyEvent.VK_1 -> {
+                if (hovered == null || hovered.isPlayer()) {
+                    alert = new InstructionAlert("Can't attack here", 50);
+                } else {
+                    hovered.takeDamage(hero.attack * 10);
+                    if (!hovered.isAlive()) this.units.remove(hovered);
+                    this.current.moved = true;
+                }
+            }
+            case KeyEvent.VK_2 -> {
+                if (hero.magics.length > 0) m = hero.magics[0];
+                else alert = new InstructionAlert("No magic!", 50);
+            }
+            case KeyEvent.VK_3 -> {
+                if (hero.magics.length > 1) m = hero.magics[1];
+                else alert = new InstructionAlert("No magic!", 50);
+            }
+            case KeyEvent.VK_4 -> {
+                if (hero.magics.length > 2) m = hero.magics[2];
+                else alert = new InstructionAlert("No magic!", 50);
+            }
+            case KeyEvent.VK_5 -> {
+                if (hero.magics.length > 3) m = hero.magics[3];
+                else alert = new InstructionAlert("No magic!", 50);
+            }
+        }
+        if (m != null) {
+            if (m.mana > hero.getManna()) {
+                alert = new InstructionAlert("Not enough mana!", 50);
+            } else {
+                switch (m.type) {
+                    case Lighting:
+                        if (hovered == null || hovered.isPlayer()) {
+                            alert = new InstructionAlert("Can't attack here", 50);
+                        } else {
+                            hovered.takeDamage(hero.magic * 30);
+                            hero.spendManna(m.mana);
+                        }
+                        break;
+
+                    case Fireball:
+                        this.units.stream()
+                                .filter(unit -> unit.coordinate.distanceTo(cursor) <= 1)
+                                .forEach(unit -> {
+                                    unit.takeDamage(hero.magic * 20);
+                                });
+                        this.units.removeIf(unit -> !unit.isAlive());
+                        hero.spendManna(m.mana);
+                        break;
+
+                    case Healing:
+                        if (hovered == null || hovered.isEnemy()) {
+                            alert = new InstructionAlert("Can't heal here", 50);
+                        } else {
+                            hovered.heal(hero.magic * 50);
+                            hero.spendManna(m.mana);
+                        }
+                        break;
+
+                }
+            }
         }
     }
 
@@ -283,9 +340,6 @@ public class PlayingState extends GameState {
     protected void keyReleased(int keyCode) {
 
     }
-
-
-
 
 
 }

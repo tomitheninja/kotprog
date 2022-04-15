@@ -7,16 +7,15 @@ import game.payable.Hero;
 import game.payable.Unit;
 import game.util.BoardLocation;
 import game.util.Team;
+import game.util.UnitOnBoard;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Set;
 
 public class PlayingState extends GameState {
-    private final Set<Unit.Type> movedUnits = new HashSet<>();
+
     protected Hero hero;
     protected Hero otherHero;
     protected ArrayList<UnitOnBoard> units = new ArrayList<>();
@@ -47,27 +46,55 @@ public class PlayingState extends GameState {
 
     @Override
     protected void loop() {
-        if (units.stream().allMatch(unit -> movedUnits.contains(unit.type))) {
-            alert = new InstructionAlert("A new round has started", 50);
-            movedUnits.clear();
-        }
-        obstacles = this.units.stream().map(unit -> unit.coordinate).toArray(BoardLocation[]::new);
-        current = units.stream()
-                .filter(unit -> unit.team == Team.PLAYER)
-                .filter(unit -> !movedUnits.contains(unit.type))
-                .max(Comparator.comparing(UnitOnBoard::getInitiative))
-                .orElse(null);
-        if (current == null) {
+        // game over
+        if (this.units.stream().noneMatch(UnitOnBoard::isPlayer)) {
             System.out.println("Game over!");
             System.exit(0);
         }
-        if (this.units.stream().noneMatch(unit -> unit.team == Team.ENEMY)) {
+        if (this.units.stream().noneMatch(UnitOnBoard::isEnemy)) {
             System.out.println("You won!");
             System.exit(0);
         }
-        hovered = units.stream()
-                .filter(unit -> unit.coordinate.equals(cursor))
-                .findFirst().orElse(null);
+
+        obstacles = this.units.stream().map(unit -> unit.coordinate).toArray(BoardLocation[]::new);
+        current = units.stream()
+                .filter(UnitOnBoard::isPlayer)
+                .filter(UnitOnBoard::canMove)
+                .max(Comparator.comparing(UnitOnBoard::getInitiative)).orElse(null);
+
+        UnitOnBoard enemyUnit = this.units.stream()
+                .filter(UnitOnBoard::isEnemy)
+                .filter(UnitOnBoard::canMove)
+                .filter(unit -> current == null || unit.initiative > current.initiative)
+                .max(Comparator.comparing(UnitOnBoard::getInitiative))
+                .orElse(null);
+        if (enemyUnit != null) {
+            UnitOnBoard toAttack = this.units.stream()
+                    .filter(UnitOnBoard::isPlayer)
+                    .filter(unit -> unit.coordinate.isNeighbor(enemyUnit.coordinate))
+                    .findFirst().orElse(null);
+            if (toAttack != null) {
+                boolean isCriticalDamage = UnitOnBoard.fight(enemyUnit, toAttack, otherHero, hero, true);
+                if (isCriticalDamage) alert = new InstructionAlert("Critical attack!", 50);
+                if (!enemyUnit.isAlive())
+                 {
+                    this.units.remove(enemyUnit);
+                    enemyUnit.coordinate = new BoardLocation(toAttack.coordinate);
+                }
+                if (!toAttack.isAlive()) this.units.remove(toAttack);
+            } else {
+                // step next to archer
+                enemyUnit.moved = true;
+            }
+            return;
+        }
+
+        if (units.stream().noneMatch(UnitOnBoard::canMove)) {
+            units.forEach(unit -> unit.moved = false);
+            alert = new InstructionAlert("A new round has started", 50);
+        }
+
+        hovered = units.stream().filter(unit -> unit.coordinate.equals(cursor)).findFirst().orElse(null);
         tick = (tick + 1) % Integer.MAX_VALUE;
         if (alert != null) {
             if (alert.isDone()) alert = null;
@@ -77,11 +104,11 @@ public class PlayingState extends GameState {
 
     @Override
     protected void render(Graphics graphics) {
-        if (current == null) return; // waiting for loop()
         drawBackground(graphics);
         drawHero(graphics);
         drawEnemyHero(graphics);
         drawUnits(graphics);
+        if (current == null) return; // waiting for loop()
         drawReachableFields(graphics);
         if (isCursorVisible()) drawCursor(graphics);
         drawBoard(graphics);
@@ -99,12 +126,12 @@ public class PlayingState extends GameState {
         if (unit == null) throw new NullPointerException("Unit must be defined");
         graphics.setColor(Color.WHITE);
         graphics.setFont(new Font("Arial", Font.PLAIN, 14));
-        graphics.drawString((unit.team == Team.ENEMY ? "Enemy u" : "U") + "nit: " + unit, 10, WindowManager.HEIGHT - 10);
+        graphics.drawString((unit.isEnemy() ? "Enemy u" : "U") + "nit: " + unit, 10, WindowManager.HEIGHT - 10);
     }
 
     private void drawInstructions(Graphics graphics) {
         graphics.setColor(Color.WHITE);
-        String txt = "";
+        String txt;
         graphics.setFont(new Font("Arial", Font.PLAIN, 14));
         if (alert != null) txt = alert.text;
         else txt = "Use arrows then space to move or attack. Press enter to use special action. Or press Q to skip";
@@ -131,7 +158,7 @@ public class PlayingState extends GameState {
             for (int y = 0; y < BoardLocation.HEIGHT; y++) {
                 BoardLocation loc = new BoardLocation(x, y);
                 boolean noFriendlyUnitHere = units.stream()
-                        .filter(unit -> unit.team == Team.PLAYER)
+                        .filter(UnitOnBoard::isPlayer)
                         .noneMatch(unit -> unit.coordinate.equals(loc));
                 if (current.canReach(loc, obstacles) && noFriendlyUnitHere || current.coordinate.equals(loc)) {
                     graphics.fillRect(196 + x * 32, 5 + y * 32, 32, 32);
@@ -147,8 +174,12 @@ public class PlayingState extends GameState {
             final int topLeftY = 5 + unit.coordinate.getY() * 32;
             graphics.drawImage(unit.img.getImage(), topLeftX, topLeftY, 32, 32, null);
             // health bar
-            graphics.setColor(unit.team == Team.ENEMY ? new Color(255, 0, 0, 127) : new Color(0, 255, 0, 127));
+            graphics.setColor(unit.isPlayer() ? new Color(0, 255, 0, 127) : new Color(255, 0, 0, 127));
             graphics.fillRect(topLeftX, topLeftY + 32 - 4, 32 * unit.getHealth() / unit.maxHealth, 4);
+            // initiative
+            graphics.setColor(Color.WHITE);
+            graphics.setFont(new Font("Arial", Font.PLAIN, 10));
+            graphics.drawString(unit.initiative + "", topLeftX + 2, topLeftY + 32 - 2);
         }
     }
 
@@ -197,9 +228,7 @@ public class PlayingState extends GameState {
     @Override
     protected void keyPressed(int keyCode) {
         switch (keyCode) {
-            case KeyEvent.VK_Q -> {
-                movedUnits.add(current.type);
-            }
+            case KeyEvent.VK_Q -> current.moved = true;
             case KeyEvent.VK_UP -> cursor.setY(cursor.getY() - 1);
             case KeyEvent.VK_DOWN -> cursor.setY(cursor.getY() + 1);
             case KeyEvent.VK_LEFT -> cursor.setX(cursor.getX() - 1);
@@ -209,50 +238,44 @@ public class PlayingState extends GameState {
                 if (hovered != null) {
                     if (hovered.coordinate.equals(current.coordinate)) {
                         current.specialAction.action();
-                    } else if (hovered.team == Team.ENEMY) {
+                    } else if (hovered.isEnemy()) {
                         if (current.coordinate.isNeighbor(hovered.coordinate)) {
-                            boolean isCriticalDamage = fight(current, hovered, hero, otherHero);
-                            if (isCriticalDamage)
-                                alert = new InstructionAlert("Critical attack!", 50);
-                            if (current.isAlive()) this.movedUnits.add(current.type);
-                            else current = null;
-                        } else {
-                            alert = new InstructionAlert("Out of range!", 50);
-                        }
+                            boolean isCriticalDamage = UnitOnBoard.fight(current, hovered, hero, otherHero, true);
+                            if (isCriticalDamage) alert = new InstructionAlert("Critical attack!", 50);
+                            if (current.isAlive()) current.moved = true;
+                            else {
+                                this.units.remove(current);
+                                current = null;
+                            }
+                            if (!hovered.isAlive()) {
+                                current.coordinate = new BoardLocation(hovered.coordinate);
+                                this.units.remove(hovered);
+                            }
+                        } else if (current.type == Unit.Type.IJASZ) {
+                            boolean noEnemyNeighbor = units.stream()
+                                    .filter(UnitOnBoard::isEnemy)
+                                    .noneMatch(unit -> unit.coordinate.isNeighbor(current.coordinate));
+                            if (noEnemyNeighbor) {
+                                boolean isCriticalDamage = UnitOnBoard.fight(current, hovered, hero, otherHero, hovered.type == Unit.Type.IJASZ);
+                                if (isCriticalDamage) alert = new InstructionAlert("Critical attack!", 50);
+                                if (!current.isAlive()) this.units.remove(current);
+                                if (!hovered.isAlive()) this.units.remove(hovered);
+                            } else {
+                                alert = new InstructionAlert("Enemy nearby!", 50);
+                            }
+                        } else alert = new InstructionAlert("Out of range!", 50);
                     }
-                } else if (movedUnits.contains(current.type)) {
+                } else if (!current.canMove()) {
                     alert = new InstructionAlert("Unit already moved", 50);
                 } else if (current.canReach(cursor, obstacles)) {
                     current.coordinate = new BoardLocation(cursor);
-                    movedUnits.add(current.type);
+                    current.moved = true;
                 } else {
                     alert = new InstructionAlert("Can't move there", 50);
                 }
             }
             //        case KeyEvent.VK_ESCAPE -> selectedCoordinate = null;
         }
-
-    }
-
-    private boolean fight(UnitOnBoard attacker, UnitOnBoard defender, Hero attackerHero, Hero defenderHero) {
-        boolean isCriticalDamage = 100 * Math.random() < attackerHero.luck;
-        double attackModifier = (1 + attackerHero.attack * 0.1) * (1 - defenderHero.defence * 0.05) * (isCriticalDamage ? 2 : 1);
-        int damage = (int) (attacker.getAttack() * attackModifier);
-        defender.takeDamage(damage);
-        if (defender.isAlive()) {
-            double defenderAttackModifier = (1 + defenderHero.attack * 0.1) * (1 - attackerHero.defence * 0.05);
-            int defenderDamage = (int) (defender.getAttack() * defenderAttackModifier);
-            attacker.takeDamage(defenderDamage);
-            if (!attacker.isAlive()) {
-                System.out.println("Attacker unit died");
-                this.units.remove(attacker);
-            }
-        } else {
-            System.out.println("defender unit died");
-            this.units.remove(defender);
-            attacker.coordinate = new BoardLocation(defender.coordinate);
-        }
-        return isCriticalDamage;
     }
 
     @Override
@@ -260,9 +283,6 @@ public class PlayingState extends GameState {
 
     }
 
-    public enum Difficulty {
-        EASY, MEDIUM, HARD
-    }
 
     private static class InstructionAlert {
         public final String text;
@@ -284,28 +304,5 @@ public class PlayingState extends GameState {
         }
     }
 
-    protected static class UnitOnBoard extends Unit {
 
-
-        BoardLocation coordinate;
-        Team team;
-
-        public UnitOnBoard(Unit unit, BoardLocation coordinate, Team team) {
-            super(unit);
-            if (coordinate == null) throw new IllegalArgumentException("coordinate can't be null");
-            if (team == null) throw new IllegalArgumentException("team can't be null");
-            this.coordinate = coordinate;
-            this.team = team;
-        }
-
-        public boolean canReach(BoardLocation target, BoardLocation[] obstacles) {
-            int x = coordinate.getX();
-            int y = coordinate.getY();
-            int tx = target.getX();
-            int ty = target.getY();
-            int dx = Math.abs(x - tx);
-            int dy = Math.abs(y - ty);
-            return dx + dy <= movement;
-        }
-    }
 }

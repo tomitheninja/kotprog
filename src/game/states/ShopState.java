@@ -105,7 +105,7 @@ public class ShopState extends GameState {
         // instructions
         graphics.setColor(Color.BLACK);
         graphics.setFont(new Font("Arial", Font.PLAIN, 15));
-        graphics.drawString("Use the arrow keys to buy. Press ENTER to start", 15, WindowManager.HEIGHT - 15);
+        graphics.drawString("Use the arrow keys and page up, down to buy. Press ENTER to start", 15, WindowManager.HEIGHT - 15);
     }
 
     @Override
@@ -170,6 +170,32 @@ public class ShopState extends GameState {
                     }
                 } else {
                     magics[cursorIndex - ShopHero.Skill.values().length - units.length].sell();
+                }
+            }
+            case KeyEvent.VK_PAGE_UP -> {
+                if (cursorIndex < ShopHero.Skill.values().length + units.length) {
+                    int i = cursorIndex - ShopHero.Skill.values().length;
+                    for (int j = 0; j < units.length; j++) {
+                        if (i == j) {
+                            if (gold < units[j].cost * 10) {
+                                JOptionPane.showMessageDialog(null, "Nincs elég aranyad!");
+                            } else {
+                                gold -= units[j].cost * 10;
+                                units[j].amount += 10;
+                            }
+                        }
+                    }
+                }
+            }
+            case KeyEvent.VK_PAGE_DOWN -> {
+                if (cursorIndex < ShopHero.Skill.values().length + units.length) {
+                    int i = cursorIndex - ShopHero.Skill.values().length;
+                    for (int j = 0; j < units.length; j++) {
+                        if (i == j && units[j].amount >= 10) {
+                            gold += units[j].cost * 10;
+                            units[j].amount -= 10;
+                        }
+                    }
                 }
             }
         }

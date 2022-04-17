@@ -11,6 +11,7 @@ import game.util.InstructionAlert;
 import game.util.Team;
 import game.util.UnitOnBoard;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -51,11 +52,11 @@ public class PlayingState extends GameState {
     protected void loop() {
         // game over
         if (this.units.stream().noneMatch(UnitOnBoard::isPlayer)) {
-            System.out.println("Game over!");
+            JOptionPane.showMessageDialog(null, "Game over!");
             System.exit(0);
         }
         if (this.units.stream().noneMatch(UnitOnBoard::isEnemy)) {
-            System.out.println("You won!");
+            JOptionPane.showMessageDialog(null, "You won!");
             System.exit(0);
         }
 

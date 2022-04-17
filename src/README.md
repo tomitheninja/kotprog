@@ -23,8 +23,12 @@ Jobb, Bal, Fel és Le nyilakkal válthatunk a boltban. Egységeket lehet 10-esé
 
 A kurzor a nyilakkal mozgatható.
 
+A legnagyobb kezdeményezőképességű egység (ikonként jelezve) van kiválasztva. Azonos kezdeményezőképességű egységek közül mindig a játékos lép először.
+
 Szóköz hatására az egység az adott mezőre lép. Ha ez a mező szomszédos és ellenséges egység van rajta, akkor támadás történik.
 
 A mágiákat egy adott mező kiválasztsával majd az 1,2,3, ... billentyűkkel válthatjuk ki.
 
 Az adott billentyű a képesség mellett van jelezve.
+
+A ninja egységnek nem lehet visszatámadni.

@@ -10,6 +10,8 @@ public class Unit {
     private static final Unit Foldmuves = new Unit(Type.FOLDMUVES, 1, 1, 3, 4, 8, new ImageIcon(Objects.requireNonNull(Unit.class.getClassLoader().getResource("falusi_balra.png"))));
     private static final Unit Ijasz = new Unit(Type.IJASZ, 2, 4, 7, 4, 9, new ImageIcon(Objects.requireNonNull(Unit.class.getClassLoader().getResource("varazslo_balra.png"))));
     private static final Unit Griff = new Unit(Type.GRIFF, 5, 10, 30, 7, 15, new ImageIcon(Objects.requireNonNull(Unit.class.getClassLoader().getResource("griff_balra.png"))));
+    private static final Unit Ninja = new Unit(Type.FOLDMUVES, 4, 6, 2, 5, 10, new ImageIcon(Objects.requireNonNull(Unit.class.getClassLoader().getResource("ninja.png"))));
+
     private final ImageIcon img;
     private final Type type;
     private final int minAttack;
@@ -112,11 +114,12 @@ public class Unit {
     }
 
     public enum Type {
-        FOLDMUVES, IJASZ, GRIFF;
+        FOLDMUVES, IJASZ, GRIFF, NINJA;
 
         @Override
         public String toString() {
             return switch (this) {
+                case NINJA -> "Ninja";
                 case FOLDMUVES -> "Földműves";
                 case IJASZ -> "Íjász";
                 case GRIFF -> "Griff";
@@ -125,6 +128,7 @@ public class Unit {
 
         private Unit asUnit() {
             return switch (this) {
+                case NINJA -> Ninja;
                 case FOLDMUVES -> Foldmuves;
                 case IJASZ -> Ijasz;
                 case GRIFF -> Griff;

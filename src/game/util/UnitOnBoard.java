@@ -35,7 +35,7 @@ public class UnitOnBoard extends Unit {
         boolean isCriticalDamage = 100 * Math.random() < attackerHero.luck * 5;
         int damage = attacker.getRealAttack(attackerHero, defenderHero, isCriticalDamage);
         defender.takeDamage(damage);
-        if (defender.isAlive() && defender.reattack && allowReattack) {
+        if (defender.isAlive() && defender.reattack && allowReattack && defender.getType() != Type.NINJA) {
             defender.reattack = defender.getType() == Unit.Type.GRIFF;
             int defenderDamage = defender.getRealAttack(defenderHero, attackerHero, false);
             attacker.takeDamage(defenderDamage);

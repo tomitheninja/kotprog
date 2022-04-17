@@ -21,7 +21,7 @@ public class ShopState extends GameState {
     public final Hero enemyHero;
     public final ArrayList<Unit> enemyUnits;
     public final int initialGold;
-    protected final ShopItem<Unit.Type>[] units = new ShopItem[]{new ShopItem<>(Unit.Type.FOLDMUVES, 2), new ShopItem<>(Unit.Type.IJASZ, 5), new ShopItem<>(Unit.Type.GRIFF, 10),};
+    protected final ShopItem<Unit.Type>[] units = new ShopItem[]{new ShopItem<>(Unit.Type.FOLDMUVES, 2), new ShopItem<>(Unit.Type.IJASZ, 5), new ShopItem<>(Unit.Type.GRIFF, 10),new ShopItem(Unit.Type.NINJA, 8)};
     protected PurchasableMagic[] magics = new PurchasableMagic[]{new PurchasableMagic(Magic.Villamcsapas), new PurchasableMagic(Magic.Tuzlabda), new PurchasableMagic(Magic.Feltamasztas),};
     protected int cursorIndex = 0;
     ShopHero hero = new ShopHero();

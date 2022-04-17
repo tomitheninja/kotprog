@@ -18,6 +18,7 @@ import java.util.Comparator;
 
 public class PlayingState extends GameState {
 
+    int numRound = 1;
     protected Hero hero;
     protected Hero enemyHero;
     protected ArrayList<UnitOnBoard> units = new ArrayList<>();
@@ -93,6 +94,7 @@ public class PlayingState extends GameState {
         if (units.stream().noneMatch(UnitOnBoard::canMove)) {
             units.forEach(unit -> unit.moved = false);
             alert = new InstructionAlert("A new round has started", 50);
+            numRound++;
         }
 
         hovered = units.stream().filter(unit -> unit.coordinate.equals(cursor)).findFirst().orElse(null);
@@ -116,6 +118,9 @@ public class PlayingState extends GameState {
         drawCurrentUnit(graphics);
         drawInstructions(graphics);
         if (hovered != null) drawUnitStats(graphics, hovered);
+        graphics.setFont(new Font("Arial", Font.BOLD, 20));
+        graphics.setColor(Color.WHITE);
+        graphics.drawString("ROUND: " + numRound, WindowManager.WIDTH - 100, WindowManager.HEIGHT - 20);
     }
 
     private void drawCurrentUnit(Graphics graphics) {
